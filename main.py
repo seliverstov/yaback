@@ -52,15 +52,13 @@ def post_imports(data: Import):
 
 @app.patch("/imports/{import_id}/citizens/{citizen_id}")
 def patch_citizen(import_id: str, citizen_id: int, data: Citizen):
-    imp = imports.find_one({"_id": ObjectId(import_id)})
-    result = {}
-    d = {k:v for k,v in data.dict().items() if v is not None}
-    for c in imp['citizens']:
-        if c['citizen_id'] == citizen_id:
-            c.update(d)
-            result = c
-    imports.update({"_id": ObjectId(import_id)}, {"$set": imp})
-    return {"data": result}
+    fields = {f"citizens.$.{k}": v for k, v in data.dict().items() if v is not None}
+    query = {"_id": ObjectId(import_id), "citizens.citizen_id": citizen_id}
+    imports.update_one(
+        filter=query,
+        update={"$set": fields})
+    result = imports.find_one(filter=query, projection={"citizens.$": True, "_id": False})
+    return {"data": result['citizens'][0]}
 
 
 @app.get("/imports/{import_id}/citizens")
