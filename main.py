@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, Response
 from pymongo import MongoClient
+from pymongo.collection import ReturnDocument
 from bson.objectid import ObjectId
 import os
 from dotenv import load_dotenv
@@ -51,14 +52,20 @@ def post_imports(data: Import):
 
 
 @app.patch("/imports/{import_id}/citizens/{citizen_id}")
-def patch_citizen(import_id: str, citizen_id: int, data: Citizen):
-    fields = {f"citizens.$.{k}": v for k, v in data.dict().items() if v is not None}
-    query = {"_id": ObjectId(import_id), "citizens.citizen_id": citizen_id}
-    imports.update_one(
-        filter=query,
-        update={"$set": fields})
-    result = imports.find_one(filter=query, projection={"citizens.$": True, "_id": False})
-    return {"data": result['citizens'][0]}
+def patch_citizen(import_id: str, citizen_id: int, data: Citizen, response: Response):
+    fields = {k: v for k, v in data.dict().items() if v is not None}
+    result = imports.find_one_and_update(
+        filter={"_id": ObjectId(import_id), "citizens.citizen_id": citizen_id},
+        projection={"citizens.$": True, "_id": False},
+        update={"$set": {f"citizens.$.{k}": v for k, v in fields.items()}},
+        return_document=ReturnDocument.BEFORE)
+    if result is not None:
+        citizen = result['citizens'][0]
+        citizen.update(fields)
+        return {"data": citizen}
+    else:
+        response.status_code = 400
+        return response
 
 
 @app.get("/imports/{import_id}/citizens")
