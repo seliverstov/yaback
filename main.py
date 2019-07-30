@@ -1,13 +1,15 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import List
 from starlette.responses import RedirectResponse, Response
 from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
 from bson.objectid import ObjectId
+from collections import defaultdict
 import os
 from dotenv import load_dotenv
-from examples import CITIZEN, BIRTHDAYS, STATS
+import datetime
+from tests.examples import CITIZEN, BIRTHDAYS, STATS
 
 load_dotenv(verbose=True)
 
@@ -21,7 +23,22 @@ imports = db['imports']
 
 
 class Citizen(BaseModel):
-    citizen_id: int = None
+    citizen_id: int
+    town: str
+    street: str
+    building: str
+    appartement: int
+    name: str
+    birth_date: str
+    gender: str
+    relatives: List[int]
+
+    @validator('birth_date')
+    def birth_date_format(cls, v):
+        return datetime.datetime.strptime(v, '%d.%m.%Y')
+
+
+class Patch(BaseModel):
     town: str = None
     street: str = None
     building: str = None
@@ -35,6 +52,20 @@ class Citizen(BaseModel):
 class Import(BaseModel):
     citizens: List[Citizen]
 
+    @validator("citizens", whole=True)
+    def relatives_must_be_mutual(cls, v, **kwargs):
+        citizens = {}
+
+        for item in v:
+            citizens[item.citizen_id] = item.relatives
+
+        for c, rs in citizens.items():
+            for r in rs:
+                if (r not in citizens) or (c not in citizens[r]):
+                    print(f"CHECK PAIR {c} {r}")
+                    raise ValueError("relatives must be mutual")
+        return v
+
 
 app = FastAPI()
 
@@ -47,20 +78,33 @@ def get_root():
 
 @app.post("/imports", status_code=201)
 def post_imports(data: Import):
-    id = imports.insert_one(data.dict()).inserted_id
+    imp = data.dict()
+    id = imports.insert_one(imp).inserted_id
     return {"data": {"import_id": str(id)}}
 
 
 @app.patch("/imports/{import_id}/citizens/{citizen_id}")
-def patch_citizen(import_id: str, citizen_id: int, data: Citizen, response: Response):
+def patch_citizen(import_id: str, citizen_id: int, data: Patch, response: Response):
     fields = {k: v for k, v in data.dict().items() if v is not None}
-    result = imports.find_one_and_update(
+    citizen = imports.find_one_and_update(
         filter={"_id": ObjectId(import_id), "citizens.citizen_id": citizen_id},
         projection={"citizens.$": True, "_id": False},
         update={"$set": {f"citizens.$.{k}": v for k, v in fields.items()}},
         return_document=ReturnDocument.BEFORE)
-    if result is not None:
-        citizen = result['citizens'][0]
+    if citizen is not None:
+        citizen = citizen['citizens'][0]
+
+        if 'relatives' in fields.keys():
+
+            add_rels = set(fields['relatives']).difference(set(citizen['relatives']))
+            del_rels = set(citizen['relatives']).difference(set(fields['relatives']))
+
+            imports.update(filter={"_id": ObjectId(import_id), "citizens.citizen_id": {"$in": add_rels}},
+                           update={"push": {f"citizens.$.relatives": citizen_id}})
+
+            imports.update(filter={"_id": ObjectId(import_id), "citizens.citizen_id": {"$in": del_rels}},
+                           update={"$pull": {f"citizens.$.relatives": citizen_id}})
+
         citizen.update(fields)
         return {"data": citizen}
     else:
