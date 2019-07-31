@@ -21,6 +21,8 @@ db = client['yaback']
 
 imports = db['imports']
 
+counter = db['counter']
+
 
 class Citizen(BaseModel):
     citizen_id: int
@@ -79,15 +81,21 @@ def get_root():
 @app.post("/imports", status_code=201)
 def post_imports(data: Import):
     imp = data.dict()
+    c = counter.find_one_and_update(filter={"_id": "import_id"},
+                                    update={"$inc": {"c": 1}},
+                                    upsert=True,
+                                    return_document=ReturnDocument.AFTER)
+    import_id = c['c']
+    imp['import_id'] = import_id
     id = imports.insert_one(imp).inserted_id
-    return {"data": {"import_id": str(id)}}
+    return {"data": {"import_id": import_id}}
 
 
 @app.patch("/imports/{import_id}/citizens/{citizen_id}")
 def patch_citizen(import_id: str, citizen_id: int, data: Patch, response: Response):
     fields = {k: v for k, v in data.dict().items() if v is not None}
     citizen = imports.find_one_and_update(
-        filter={"_id": ObjectId(import_id), "citizens.citizen_id": citizen_id},
+        filter={"import_id": import_id, "citizens.citizen_id": citizen_id},
         projection={"citizens.$": True, "_id": False},
         update={"$set": {f"citizens.$.{k}": v for k, v in fields.items()}},
         return_document=ReturnDocument.BEFORE)
@@ -114,7 +122,7 @@ def patch_citizen(import_id: str, citizen_id: int, data: Patch, response: Respon
 
 @app.get("/imports/{import_id}/citizens")
 def get_citizens(import_id: str):
-    imp = imports.find_one({"_id": ObjectId(import_id)})
+    imp = imports.find_one({"import_id": import_id})
     return {"data": imp['citizens']}
 
 

@@ -161,3 +161,16 @@ def test_import_gender():
 
 def test_import_birth_date():
     __test_import_date_field('birth_date')
+
+
+def test_import_id():
+    server_api = get_server_api()
+    data = {
+        'citizens': [get_random_citizen(relatives=False) for _ in range(5)]
+    }
+    r = requests.post(f"{server_api}/imports", json=data)
+    result = r.json()
+    assert r.status_code == 201
+    assert "data" in result
+    assert "import_id" in result['data']
+    assert isinstance(result['data']['import_id'], int)
