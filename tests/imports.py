@@ -57,19 +57,19 @@ def __test_import_int_field(field):
     }
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 422
 
     citizen[field] = "abc"
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 422
 
     citizen[field] = "1"
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 201
     assert "data" in result
     assert "import_id" in result['data']
@@ -84,13 +84,13 @@ def __test_import_str_field(field):
     }
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 422
 
     citizen[field] = "a"
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 201
     assert "data" in result
     assert "import_id" in result['data']
@@ -105,31 +105,31 @@ def __test_import_date_field(field):
     }
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 422
 
     citizen[field] = "abc"
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 422
 
     citizen[field] = "40.14.1000"
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 422
 
     citizen[field] = 100000
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 422
 
     citizen[field] = "10.10.2019"
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
-    print(f"RESPONSE JSON: {result}")
+
     assert r.status_code == 201
     assert "data" in result
     assert "import_id" in result['data']
@@ -173,4 +173,23 @@ def test_import_id():
     assert r.status_code == 201
     assert "data" in result
     assert "import_id" in result['data']
-    assert isinstance(result['data']['import_id'], int)
+
+    imp1_id = result['data']['import_id']
+
+    assert isinstance(imp1_id, int)
+
+    data = {
+        'citizens': [get_random_citizen(relatives=False) for _ in range(5)]
+    }
+
+    r = requests.post(f"{server_api}/imports", json=data)
+    result = r.json()
+    assert r.status_code == 201
+    assert "data" in result
+    assert "import_id" in result['data']
+
+    imp2_id = result['data']['import_id']
+
+    assert isinstance(imp2_id, int)
+
+    assert imp2_id - imp1_id == 1
