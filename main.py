@@ -4,7 +4,6 @@ from typing import List
 from starlette.responses import RedirectResponse, Response
 from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
-from bson.objectid import ObjectId
 import os
 from dotenv import load_dotenv
 import datetime
@@ -138,7 +137,10 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
 @app.get("/imports/{import_id}/citizens")
 def get_citizens(import_id: int):
     imp = imports.find_one({"import_id": import_id})
-    return {"data": imp['citizens']}
+    if imp is not None:
+        return {"data": imp['citizens']}
+    else:
+        raise HTTPException(status_code=404, detail=f"Import with id {import_id} not found")
 
 
 @app.get('/imports/{import_id}/citizens/birthdays')
