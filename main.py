@@ -1,11 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, validator
 from typing import List
 from starlette.responses import RedirectResponse, Response
 from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
 from bson.objectid import ObjectId
-from collections import defaultdict
 import os
 from dotenv import load_dotenv
 import datetime
@@ -37,7 +36,8 @@ class Citizen(BaseModel):
 
     @validator('birth_date')
     def birth_date_format(cls, v):
-        return datetime.datetime.strptime(v, '%d.%m.%Y')
+        datetime.datetime.strptime(v, '%d.%m.%Y')
+        return v
 
 
 class Patch(BaseModel):
@@ -49,6 +49,12 @@ class Patch(BaseModel):
     birth_date: str = None
     gender: str = None
     relatives: List[int] = None
+
+    @validator('birth_date')
+    def birth_date_format(cls, v):
+        if v is not None:
+            datetime.datetime.strptime(v, '%d.%m.%Y')
+        return v
 
 
 class Import(BaseModel):
@@ -92,11 +98,15 @@ def post_imports(data: Import):
 
 
 @app.patch("/imports/{import_id}/citizens/{citizen_id}")
-def patch_citizen(import_id: str, citizen_id: int, data: Patch, response: Response):
+def patch_citizen(import_id: int, citizen_id: int, data: Patch):
     fields = {k: v for k, v in data.dict().items() if v is not None}
+
+    if fields == {}:
+        raise HTTPException(status_code=422, detail="Empty patch not allowed")
+
     citizen = imports.find_one_and_update(
         filter={"import_id": import_id, "citizens.citizen_id": citizen_id},
-        projection={"citizens.$": True, "_id": False},
+        projection={"citizens.$": True},
         update={"$set": {f"citizens.$.{k}": v for k, v in fields.items()}},
         return_document=ReturnDocument.BEFORE)
     if citizen is not None:
@@ -107,21 +117,26 @@ def patch_citizen(import_id: str, citizen_id: int, data: Patch, response: Respon
             add_rels = set(fields['relatives']).difference(set(citizen['relatives']))
             del_rels = set(citizen['relatives']).difference(set(fields['relatives']))
 
-            imports.update(filter={"_id": ObjectId(import_id), "citizens.citizen_id": {"$in": add_rels}},
-                           update={"push": {f"citizens.$.relatives": citizen_id}})
+            if len(add_rels) > 0:
+                imports.update(
+                    {"import_id": import_id, "citizens.citizen_id": {"$in": list(add_rels)}},
+                    {"push": {f"citizens.$.relatives": citizen_id}}
+                )
 
-            imports.update(filter={"_id": ObjectId(import_id), "citizens.citizen_id": {"$in": del_rels}},
-                           update={"$pull": {f"citizens.$.relatives": citizen_id}})
+            if len(del_rels) > 0:
+                imports.update(
+                    {"import_id": import_id, "citizens.citizen_id": {"$in": list(del_rels)}},
+                    {"$pull": {f"citizens.$.relatives": citizen_id}}
+                )
 
         citizen.update(fields)
         return {"data": citizen}
     else:
-        response.status_code = 400
-        return response
+        raise HTTPException(status_code=404, detail=f"Citizen {citizen_id} in import {import_id} not found")
 
 
 @app.get("/imports/{import_id}/citizens")
-def get_citizens(import_id: str):
+def get_citizens(import_id: int):
     imp = imports.find_one({"import_id": import_id})
     return {"data": imp['citizens']}
 
