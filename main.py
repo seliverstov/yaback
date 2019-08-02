@@ -7,6 +7,7 @@ from pymongo.collection import ReturnDocument
 import os
 from dotenv import load_dotenv
 import datetime
+import numpy as np
 from tests.examples import CITIZEN, BIRTHDAYS, STATS
 from collections import defaultdict, Counter
 
@@ -171,7 +172,31 @@ def get_birthdays(import_id: int):
 
 @app.get('/imports/{import_id}/towns/stat/percentile/age')
 def get_age_stat(import_id: int):
-    print(import_id)
-    return {"data": STATS}
+    imp = imports.find_one({"import_id": import_id})
+    if imp is None:
+        raise HTTPException(status_code=404, detail=f"Import with id {import_id} not found")
+
+    towns = defaultdict(list)
+
+    year_now = datetime.datetime.now().year
+
+    for c in imp['citizens']:
+        d, m, year = c['birth_date'].split('.')
+        age = int(year_now) - int(year)
+        towns[c['town']].append(age)
+
+    result = []
+
+    print(f"TOWNS: {towns}")
+
+    for town, ages in towns.items():
+        result.append({
+            "town": town,
+            "p50": int(np.percentile(ages, 50, interpolation='linear')),
+            "p75": int(np.percentile(ages, 75, interpolation='linear')),
+            "p99": int(np.percentile(ages, 99, interpolation='linear'))
+        })
+
+    return {"data": result}
 
 
