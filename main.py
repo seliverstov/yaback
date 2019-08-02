@@ -1,15 +1,15 @@
+import datetime
+import os
+from collections import defaultdict, Counter
+from typing import List
+
+import numpy as np
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, validator
-from typing import List
-from starlette.responses import RedirectResponse, Response
 from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
-import os
-from dotenv import load_dotenv
-import datetime
-import numpy as np
-from tests.examples import CITIZEN, BIRTHDAYS, STATS
-from collections import defaultdict, Counter
+from starlette.responses import RedirectResponse
 
 load_dotenv(verbose=True)
 
@@ -154,7 +154,7 @@ def get_birthdays(import_id: int):
     birthdays = defaultdict(Counter)
 
     for c in imp['citizens']:
-        d, m , y = c['birth_date'].split('.')
+        d, m, y = c['birth_date'].split('.')
         for r in c['relatives']:
             cnt = birthdays[int(m)]
             cnt[r] += 1
@@ -198,5 +198,3 @@ def get_age_stat(import_id: int):
         })
 
     return {"data": result}
-
-

@@ -1,6 +1,7 @@
-import string
 import random
-from copy import  deepcopy
+import string
+from copy import deepcopy
+
 from .examples import CITIZEN
 
 

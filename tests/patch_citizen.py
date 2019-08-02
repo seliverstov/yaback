@@ -1,4 +1,5 @@
 import requests
+
 from .utils import get_server_api, get_random_citizen
 
 
