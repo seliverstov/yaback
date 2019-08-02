@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 import datetime
 from tests.examples import CITIZEN, BIRTHDAYS, STATS
+from collections import defaultdict, Counter
 
 load_dotenv(verbose=True)
 
@@ -145,8 +146,27 @@ def get_citizens(import_id: int):
 
 @app.get('/imports/{import_id}/citizens/birthdays')
 def get_birthdays(import_id: int):
-    print(import_id)
-    return {"data": BIRTHDAYS}
+    imp = imports.find_one({"import_id": import_id})
+    if imp is None:
+        raise HTTPException(status_code=404, detail=f"Import with id {import_id} not found")
+
+    birthdays = defaultdict(Counter)
+
+    for c in imp['citizens']:
+        d, m , y = c['birth_date'].split('.')
+        for r in c['relatives']:
+            cnt = birthdays[int(m)]
+            cnt[r] += 1
+
+    result = {}
+
+    for i in range(1, 13):
+        if i in birthdays.keys():
+            result[str(i)] = [{"citizen_id": k, "presents": v} for k, v in birthdays[i].items()]
+        else:
+            result[str(i)] = []
+
+    return {"data": result}
 
 
 @app.get('/imports/{import_id}/towns/stat/percentile/age')
