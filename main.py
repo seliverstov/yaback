@@ -29,7 +29,7 @@ class Citizen(BaseModel):
     town: str
     street: str
     building: str
-    appartement: int
+    apartment: int
     name: str
     birth_date: str
     gender: str
@@ -45,7 +45,7 @@ class Patch(BaseModel):
     town: str = None
     street: str = None
     building: str = None
-    appartement: int = None
+    apartment: int = None
     name: str = None
     birth_date: str = None
     gender: str = None

@@ -141,7 +141,7 @@ def test_import_citizen_id():
 
 
 def test_import_appartement():
-    __test_import_int_field('appartement')
+    __test_import_int_field('apartment')
 
 
 def test_import_town():

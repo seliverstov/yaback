@@ -3,7 +3,7 @@ CITIZEN = {
     "town": "Керчь",
     "street": "Иосифа Бродского",
     "building": "16к7стр5",
-    "appartement": 7,
+    "apartment": 7,
     "name": "Иванов Иван Иванович",
     "birth_date": "01.02.2000",
     "gender": "male",
