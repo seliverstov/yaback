@@ -140,7 +140,7 @@ def test_import_citizen_id():
     __test_import_int_field('citizen_id')
 
 
-def test_import_appartement():
+def test_import_apartment():
     __test_import_int_field('apartment')
 
 
