@@ -147,7 +147,11 @@ def get_citizens(import_id: int):
 
 @app.get('/imports/{import_id}/citizens/birthdays')
 def get_birthdays(import_id: int):
-    imp = imports.find_one({"import_id": import_id})
+    imp = imports.find_one({"import_id": import_id}, projection={
+        "import_id": True,
+        "citizens.birth_date": True,
+        "citizens.relatives": True
+    })
     if imp is None:
         raise HTTPException(status_code=404, detail=f"Import with id {import_id} not found")
 
@@ -172,7 +176,11 @@ def get_birthdays(import_id: int):
 
 @app.get('/imports/{import_id}/towns/stat/percentile/age')
 def get_age_stat(import_id: int):
-    imp = imports.find_one({"import_id": import_id})
+    imp = imports.find_one({"import_id": import_id}, projection={
+        "import_id": True,
+        "citizens.birth_date": True,
+        "citizens.town": True
+    })
     if imp is None:
         raise HTTPException(status_code=404, detail=f"Import with id {import_id} not found")
 
