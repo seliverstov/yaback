@@ -28,7 +28,7 @@ def test_import_nonmutual_relatives():
         'citizens': [get_random_citizen(relatives=True) for _ in range(5)]
     }
     r = requests.post(f"{server_api}/imports", json=data)
-    result = r.json()
+    # result = r.json()
     assert r.status_code == 422
 
 
@@ -64,13 +64,13 @@ def __test_import_int_field(field):
         'citizens': [citizen]
     }
     r = requests.post(f"{server_api}/imports", json=data)
-    result = r.json()
+    # result = r.json()
 
     assert r.status_code == 422
 
     citizen[field] = "abc"
     r = requests.post(f"{server_api}/imports", json=data)
-    result = r.json()
+    # result = r.json()
 
     assert r.status_code == 422
 
@@ -91,7 +91,7 @@ def __test_import_str_field(field):
         'citizens': [citizen]
     }
     r = requests.post(f"{server_api}/imports", json=data)
-    result = r.json()
+    # result = r.json()
 
     assert r.status_code == 422
 
@@ -112,25 +112,25 @@ def __test_import_date_field(field):
         'citizens': [citizen]
     }
     r = requests.post(f"{server_api}/imports", json=data)
-    result = r.json()
+    # result = r.json()
 
     assert r.status_code == 422
 
     citizen[field] = "abc"
     r = requests.post(f"{server_api}/imports", json=data)
-    result = r.json()
+    # result = r.json()
 
     assert r.status_code == 422
 
     citizen[field] = "40.14.1000"
     r = requests.post(f"{server_api}/imports", json=data)
-    result = r.json()
+    # result = r.json()
 
     assert r.status_code == 422
 
     citizen[field] = 100000
     r = requests.post(f"{server_api}/imports", json=data)
-    result = r.json()
+    # result = r.json()
 
     assert r.status_code == 422
 
@@ -211,7 +211,7 @@ def __import_task(n: int):
     }
     start = time.time()
     r = requests.post(f"{server_api}/imports", json=data)
-    end  = time.time()
+    end = time.time()
     result = r.json()
     assert r.status_code == 201
     assert "data" in result

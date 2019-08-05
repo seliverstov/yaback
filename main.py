@@ -62,7 +62,7 @@ class Import(BaseModel):
     citizens: List[Citizen]
 
     @validator("citizens", whole=True)
-    def relatives_must_be_mutual(cls, v, **kwargs):
+    def relatives_must_be_mutual(cls, v):
         citizens = {}
 
         for item in v:
@@ -94,7 +94,7 @@ def post_imports(data: Import):
                                     return_document=ReturnDocument.AFTER)
     import_id = c['c']
     imp['import_id'] = import_id
-    id = imports.insert_one(imp).inserted_id
+    imports.insert_one(imp)
     return {"data": {"import_id": import_id}}
 
 

@@ -24,8 +24,6 @@ def test_patch():
 
     import_id = result['data']['import_id']
 
-    new_citizen = get_random_citizen(relatives=False)
-
     r = requests.get(f"{server_api}/imports/{import_id}/citizens")
     result = r.json()
     print(f"RESPONSE: {result}")

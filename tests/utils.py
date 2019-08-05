@@ -51,9 +51,9 @@ def get_random_citizen(relatives=False):
 def clear_mongo_db():
     load_dotenv(verbose=True)
 
-    MONGO_URL = os.getenv('YB_MONGO_URL')
+    mongo_url = os.getenv('YB_MONGO_URL')
 
-    client = MongoClient(MONGO_URL)
+    client = MongoClient(mongo_url)
 
     db = client['yaback']
 
@@ -64,3 +64,4 @@ def clear_mongo_db():
     imports.drop()
 
     counter.drop()
+
