@@ -1,3 +1,6 @@
+import multiprocessing as mp
+import time
+
 import requests
 
 from .utils import get_server_api, get_random_citizen, clear_mongo_db
@@ -198,3 +201,30 @@ def test_import_id():
     assert isinstance(imp2_id, int)
 
     assert imp2_id - imp1_id == 1
+
+
+def __import_task(n: int):
+
+    server_api = get_server_api()
+    data = {
+        'citizens': [get_random_citizen(relatives=False) for _ in range(n)]
+    }
+    start = time.time()
+    r = requests.post(f"{server_api}/imports", json=data)
+    end  = time.time()
+    result = r.json()
+    assert r.status_code == 201
+    assert "data" in result
+    assert "import_id" in result['data']
+
+    imp1_id = result['data']['import_id']
+
+    assert isinstance(imp1_id, int)
+    assert end - start < 60
+
+
+def test_heavy_parraller_import():
+    with mp.Pool(processes=10) as pool:
+        pool.map(__import_task, [10000]*10)
+
+
