@@ -1,6 +1,10 @@
 import requests
 
-from .utils import get_server_api, get_random_citizen
+from .utils import get_server_api, get_random_citizen, clear_mongo_db
+
+
+def setup():
+    clear_mongo_db()
 
 
 def test_birthdates():

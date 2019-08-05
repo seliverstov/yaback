@@ -1,6 +1,10 @@
+import os
 import random
 import string
 from copy import deepcopy
+
+from dotenv import load_dotenv
+from pymongo import MongoClient
 
 from .examples import CITIZEN
 
@@ -42,3 +46,21 @@ def get_random_citizen(relatives=False):
     else:
         c['relatives'] = []
     return c
+
+
+def clear_mongo_db():
+    load_dotenv(verbose=True)
+
+    MONGO_URL = os.getenv('YB_MONGO_URL')
+
+    client = MongoClient(MONGO_URL)
+
+    db = client['yaback']
+
+    imports = db['imports']
+
+    counter = db['counter']
+
+    imports.drop()
+
+    counter.drop()
