@@ -22,7 +22,7 @@ def test_import_without_relatives():
     assert "import_id" in result['data']
 
 
-def test_import_nonmutual_relatives():
+def test_import_non_mutual_relatives():
     server_api = get_server_api()
     data = {
         'citizens': [get_random_citizen(relatives=True) for _ in range(5)]
@@ -223,7 +223,7 @@ def __import_task(n: int):
     assert end - start < 60
 
 
-def test_heavy_parraller_import():
+def test_parallel_import():
     with mp.Pool(processes=10) as pool:
         pool.map(__import_task, [10000]*10)
 

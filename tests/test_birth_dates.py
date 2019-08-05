@@ -7,7 +7,7 @@ def setup():
     clear_mongo_db()
 
 
-def test_birthdates():
+def test_birth_dates():
     server_api = get_server_api()
 
     citizens = [get_random_citizen(relatives=False) for _ in range(5)]
@@ -45,19 +45,19 @@ def test_birthdates():
     print(f"RESPONSE: {result}")
     assert r.status_code == 200
 
-    birthdates = result['data']
+    birth_dates = result['data']
 
-    b1 = birthdates["1"]
+    b1 = birth_dates["1"]
     assert len(b1) == 1
     assert b1[0]['citizen_id'] == 2
     assert b1[0]['presents'] == 1
 
-    b2 = birthdates["2"]
+    b2 = birth_dates["2"]
     assert len(b2) == 1
     assert b2[0]['citizen_id'] == 1
     assert b2[0]['presents'] == 1
 
-    b3 = birthdates["3"]
+    b3 = birth_dates["3"]
     assert len(b3) == 2
     assert b3[0]['citizen_id'] == 4
     assert b3[0]['presents'] == 1
@@ -65,7 +65,7 @@ def test_birthdates():
     assert b3[1]['citizen_id'] == 5
     assert b3[1]['presents'] == 1
 
-    b4 = birthdates["4"]
+    b4 = birth_dates["4"]
     assert len(b4) == 2
     assert b4[0]['citizen_id'] == 3
     assert b4[0]['presents'] == 1
@@ -73,7 +73,7 @@ def test_birthdates():
     assert b4[1]['citizen_id'] == 5
     assert b4[1]['presents'] == 1
 
-    b5 = birthdates["5"]
+    b5 = birth_dates["5"]
     assert len(b5) == 2
     assert b5[0]['citizen_id'] == 3
     assert b5[0]['presents'] == 1
@@ -82,7 +82,7 @@ def test_birthdates():
     assert b5[1]['presents'] == 1
 
     for i in range(6, 13):
-        assert birthdates[str(i)] == []
+        assert birth_dates[str(i)] == []
 
     r = requests.get(f"{server_api}/imports/10000/citizens/birthdays")
     result = r.json()
