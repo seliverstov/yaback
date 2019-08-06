@@ -23,7 +23,7 @@ def get_random_lower_string():
 
 
 def get_server_api():
-    server_name = f"http://0.0.0.0:8000"
+    server_name = os.getenv("YB_APP_URL", "http://0.0.0.0:8080")
     return server_name
 
 
