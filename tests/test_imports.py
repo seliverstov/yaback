@@ -10,6 +10,10 @@ def setup():
     clear_mongo_db()
 
 
+def teardown():
+    clear_mongo_db()
+
+
 def test_import_without_relatives():
     server_api = get_server_api()
     data = {
