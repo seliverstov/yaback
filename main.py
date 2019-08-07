@@ -15,12 +15,9 @@ log = getLogger(__name__)
 
 load_dotenv(verbose=True)
 
-MONGO_URL = os.getenv('YB_MONGO_URL')
+MONGO_URL = os.getenv('YB_MONGO_URL', 'mongodb://localhost:27017/')
 
-if MONGO_URL is None:
-    msg = f"Mongo connection URL is empty. Please, specify it in YB_MONGO_URL env variable"
-    log.error(msg)
-    raise ValueError("YB_MONGO_URL is not specified")
+log.info(f"MONGO_URL={MONGO_URL}")
 
 client = MongoClient(MONGO_URL)
 
@@ -118,6 +115,9 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
         projection={"citizens.$": True},
         update={"$set": {f"citizens.$.{k}": v for k, v in fields.items()}},
         return_document=ReturnDocument.BEFORE)
+
+    # TODO Check if in relatives present on existing id
+
     if citizen is not None:
         citizen = citizen['citizens'][0]
 
