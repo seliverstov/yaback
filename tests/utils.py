@@ -49,8 +49,6 @@ def get_random_citizen(relatives=False):
 
 
 def clear_mongo_db():
-    load_dotenv(verbose=True)
-
     mongo_url = os.getenv('YB_MONGO_URL', 'mongodb://localhost:27017/')
 
     client = MongoClient(mongo_url)

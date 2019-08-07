@@ -4,7 +4,6 @@ from collections import defaultdict, Counter
 from typing import List
 from logging import getLogger
 import numpy as np
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, validator
 from pymongo import MongoClient
@@ -12,8 +11,6 @@ from pymongo.collection import ReturnDocument
 from starlette.responses import RedirectResponse
 
 log = getLogger(__name__)
-
-load_dotenv(verbose=True)
 
 MONGO_URL = os.getenv('YB_MONGO_URL', 'mongodb://localhost:27017/')
 
