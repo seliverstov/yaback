@@ -2,7 +2,7 @@ import datetime
 import os
 from collections import defaultdict, Counter
 from typing import List
-
+from logging import getLogger
 import numpy as np
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -11,9 +11,16 @@ from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
 from starlette.responses import RedirectResponse
 
+log = getLogger(__name__)
+
 load_dotenv(verbose=True)
 
 MONGO_URL = os.getenv('YB_MONGO_URL')
+
+if MONGO_URL is None:
+    msg = f"Mongo connection URL is empty. Please, specify it in YB_MONGO_URL env variable"
+    log.error(msg)
+    raise ValueError("YB_MONGO_URL is not specified")
 
 client = MongoClient(MONGO_URL)
 
@@ -71,7 +78,7 @@ class Import(BaseModel):
         for c, rs in citizens.items():
             for r in rs:
                 if (r not in citizens) or (c not in citizens[r]):
-                    print(f"CHECK PAIR {c} {r}")
+                    log.debug(f"CHECK PAIR {c} {r}")
                     raise ValueError("relatives must be mutual")
         return v
 
@@ -95,6 +102,7 @@ def post_imports(data: Import):
     import_id = c['c']
     imp['import_id'] = import_id
     imports.insert_one(imp)
+    log.info(f"Created import with id: {import_id}")
     return {"data": {"import_id": import_id}}
 
 
@@ -117,6 +125,9 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
 
             add_rels = set(fields['relatives']).difference(set(citizen['relatives']))
             del_rels = set(citizen['relatives']).difference(set(fields['relatives']))
+
+            log.info(f"New relative for citizen {citizen_id}: {add_rels}")
+            log.info(f"Relatives to remove for citizen {citizen_id}: {del_rels}")
 
             if len(add_rels) > 0:
                 imports.update(
@@ -195,7 +206,7 @@ def get_age_stat(import_id: int):
 
     result = []
 
-    print(f"TOWNS: {towns}")
+    log.debug(f"TOWNS: {towns}")
 
     for town, ages in towns.items():
         result.append({
