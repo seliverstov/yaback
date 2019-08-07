@@ -107,6 +107,13 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
     if fields == {}:
         raise HTTPException(status_code=422, detail="Empty patch not allowed")
 
+    if "relatives" in fields:
+        relatives = fields["relatives"]
+        if len(relatives) > 0:
+            cnt = imports.count(flter={"import_id": import_id, "citizens.citizen_id": {"$in": fields["relatives"]}})
+            if cnt != len(relatives):
+                raise HTTPException(status_code=422, detail=f"Some relatives does not exists in import {import_id}")
+
     citizen = imports.find_one_and_update(
         filter={"import_id": import_id, "citizens.citizen_id": citizen_id},
         projection={"citizens.$": True},
