@@ -26,6 +26,10 @@ imports = db['imports']
 counter = db['counter']
 
 
+class Token(BaseModel):
+    token: str
+
+
 class Gender(str, Enum):
     male = 'male'
     female = 'female'
@@ -227,3 +231,14 @@ def get_age_stat(import_id: int):
         })
 
     return {"data": result}
+
+
+@app.post('/clear')
+def clear(data: Token):
+    if data['token'] == os.getenv('YA_TOKEN', '52ce8098-d510-4bbc-88b9-e1a733292786'):
+        imports.drop()
+        counter.drop()
+        return {"data": "ok"}
+    else:
+        raise HTTPException(status_code=404)
+
