@@ -3,7 +3,6 @@ import random
 import string
 from copy import deepcopy
 
-from dotenv import load_dotenv
 from pymongo import MongoClient
 
 from .examples import CITIZEN

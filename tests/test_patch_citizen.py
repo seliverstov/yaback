@@ -139,3 +139,4 @@ def test_patch_with_relatives_update():
             assert c['relatives'] == [4]
         if c['citizen_id'] == 2:
             assert c['relatives'] == [4, 0]
+

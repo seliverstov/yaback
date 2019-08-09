@@ -1,16 +1,17 @@
 import datetime
 import os
 from collections import defaultdict, Counter
-from typing import List
-from logging import getLogger
-import numpy as np
 from enum import Enum
+from logging import getLogger
+from typing import List
+
+import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, validator
 from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
-from starlette.responses import RedirectResponse, PlainTextResponse, JSONResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 log = getLogger(__name__)
 
