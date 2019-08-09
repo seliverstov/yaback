@@ -235,7 +235,7 @@ def get_age_stat(import_id: int):
 
 @app.post('/clear')
 def clear(data: Token):
-    if data['token'] == os.getenv('YA_TOKEN', '52ce8098-d510-4bbc-88b9-e1a733292786'):
+    if data['token'] == os.getenv('YB_TOKEN', '52ce8098-d510-4bbc-88b9-e1a733292786'):
         imports.drop()
         counter.drop()
         return {"data": "ok"}
