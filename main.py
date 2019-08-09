@@ -6,10 +6,11 @@ from logging import getLogger
 import numpy as np
 from enum import Enum
 from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, validator
 from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, PlainTextResponse, JSONResponse
 
 log = getLogger(__name__)
 
@@ -90,6 +91,11 @@ class Import(BaseModel):
 app = FastAPI()
 
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse({"detail": str(exc)}, status_code=400)
+
+
 @app.get("/")
 def get_root():
     response = RedirectResponse(url='/docs')
@@ -115,14 +121,14 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
     fields = {k: v for k, v in data.dict().items() if v is not None}
 
     if fields == {}:
-        raise HTTPException(status_code=422, detail="Empty patch not allowed")
+        raise HTTPException(status_code=400, detail="Empty patch not allowed")
 
     if "relatives" in fields:
         relatives = fields["relatives"]
         if len(relatives) > 0:
             cnt = imports.count(flter={"import_id": import_id, "citizens.citizen_id": {"$in": fields["relatives"]}})
             if cnt != len(relatives):
-                raise HTTPException(status_code=422, detail=f"Some relatives does not exists in import {import_id}")
+                raise HTTPException(status_code=400, detail=f"Some relatives does not exists in import {import_id}")
 
     citizen = imports.find_one_and_update(
         filter={"import_id": import_id, "citizens.citizen_id": citizen_id},
@@ -158,7 +164,7 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
         citizen.update(fields)
         return {"data": citizen}
     else:
-        raise HTTPException(status_code=404, detail=f"Citizen {citizen_id} in import {import_id} not found")
+        raise HTTPException(status_code=400, detail=f"Citizen {citizen_id} in import {import_id} not found")
 
 
 @app.get("/imports/{import_id}/citizens")
@@ -167,7 +173,7 @@ def get_citizens(import_id: int):
     if imp is not None:
         return {"data": imp['citizens']}
     else:
-        raise HTTPException(status_code=404, detail=f"Import with id {import_id} not found")
+        raise HTTPException(status_code=400, detail=f"Import with id {import_id} not found")
 
 
 @app.get('/imports/{import_id}/citizens/birthdays')
@@ -178,7 +184,7 @@ def get_birthdays(import_id: int):
         "citizens.relatives": True
     })
     if imp is None:
-        raise HTTPException(status_code=404, detail=f"Import with id {import_id} not found")
+        raise HTTPException(status_code=400, detail=f"Import with id {import_id} not found")
 
     birthdays = defaultdict(Counter)
 
@@ -207,7 +213,7 @@ def get_age_stat(import_id: int):
         "citizens.town": True
     })
     if imp is None:
-        raise HTTPException(status_code=404, detail=f"Import with id {import_id} not found")
+        raise HTTPException(status_code=400, detail=f"Import with id {import_id} not found")
 
     towns = defaultdict(list)
 
@@ -240,5 +246,5 @@ def clear(data: Token):
         counter.drop()
         return {"data": "ok"}
     else:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=400)
 

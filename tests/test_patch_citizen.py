@@ -58,12 +58,12 @@ def test_patch():
     r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json={})
     result = r.json()
     print(f"RESPONSE: {result}")
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     r = requests.patch(f"{server_api}/imports/10000/citizens/20000", json=new_citizen)
     result = r.json()
     print(f"RESPONSE: {result}")
-    assert r.status_code == 404
+    assert r.status_code == 400
 
     new_citizen = get_random_citizen(relatives=True)
     new_citizen['relatives'].append(1_000_000)
@@ -71,7 +71,7 @@ def test_patch():
     r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
     result = r.json()
     print(f"RESPONSE: {result}")
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     new_citizen = get_random_citizen(relatives=False)
     new_citizen['gender'] = 'abc'
@@ -79,7 +79,5 @@ def test_patch():
     r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
     result = r.json()
     print(f"RESPONSE: {result}")
-    assert r.status_code == 422
-
-
+    assert r.status_code == 400
 

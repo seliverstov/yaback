@@ -33,7 +33,7 @@ def test_import_non_mutual_relatives():
     }
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
-    assert r.status_code == 422
+    assert r.status_code == 400
 
 
 def test_import_mutual_relatives():
@@ -70,13 +70,13 @@ def __test_import_int_field(field):
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = "abc"
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = "1"
     r = requests.post(f"{server_api}/imports", json=data)
@@ -97,7 +97,7 @@ def __test_import_str_field(field):
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = "a"
     r = requests.post(f"{server_api}/imports", json=data)
@@ -118,25 +118,25 @@ def __test_import_date_field(field):
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = "abc"
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = "40.14.1000"
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = 100000
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = "10.10.2019"
     r = requests.post(f"{server_api}/imports", json=data)
@@ -178,7 +178,7 @@ def test_import_gender():
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = "abc"
     data = {
@@ -187,7 +187,7 @@ def test_import_gender():
     r = requests.post(f"{server_api}/imports", json=data)
     # result = r.json()
 
-    assert r.status_code == 422
+    assert r.status_code == 400
 
     citizen[field] = "male"
     r = requests.post(f"{server_api}/imports", json=data)

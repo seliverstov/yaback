@@ -91,7 +91,7 @@ def test_birth_dates():
     r = requests.get(f"{server_api}/imports/10000/citizens/birthdays")
     result = r.json()
     print(f"RESPONSE: {result}")
-    assert r.status_code == 404
+    assert r.status_code == 400
 
 
 

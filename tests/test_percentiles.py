@@ -74,7 +74,7 @@ def test_age_percentile():
     r = requests.get(f"{server_api}/imports/10000/towns/stat/percentile/age")
     result = r.json()
     print(f"RESPONSE: {result}")
-    assert r.status_code == 404
+    assert r.status_code == 400
 
 
 
