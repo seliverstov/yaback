@@ -126,8 +126,16 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
     if "relatives" in fields:
         relatives = fields["relatives"]
         if len(relatives) > 0:
-            cnt = imports.count(flter={"import_id": import_id, "citizens.citizen_id": {"$in": fields["relatives"]}})
-            if cnt != len(relatives):
+            cnt = imports.aggregate(
+                [
+                    {"$match": {"import_id": import_id}},
+                    {"$unwind": "$citizens"},
+                    {"$match": {"citizens.citizen_id": {"$in": fields["relatives"]}}},
+                    {"$group": {"_id": None, "count": {"$sum": 1}}}
+                ]
+            )
+            cnt = list(cnt)
+            if len(cnt) != 1 or cnt[0]['count'] != len(relatives):
                 raise HTTPException(status_code=400, detail=f"Some relatives does not exists in import {import_id}")
 
     citizen = imports.find_one_and_update(
@@ -135,8 +143,6 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
         projection={"citizens.$": True},
         update={"$set": {f"citizens.$.{k}": v for k, v in fields.items()}},
         return_document=ReturnDocument.BEFORE)
-
-    # TODO Check if in relatives present on existing id
 
     if citizen is not None:
         citizen = citizen['citizens'][0]
@@ -152,7 +158,7 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
             if len(add_rels) > 0:
                 imports.update(
                     {"import_id": import_id, "citizens.citizen_id": {"$in": list(add_rels)}},
-                    {"push": {f"citizens.$.relatives": citizen_id}}
+                    {"$push": {f"citizens.$.relatives": citizen_id}}
                 )
 
             if len(del_rels) > 0:

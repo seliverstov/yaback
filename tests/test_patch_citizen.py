@@ -81,3 +81,61 @@ def test_patch():
     print(f"RESPONSE: {result}")
     assert r.status_code == 400
 
+
+def test_patch_with_relatives_update():
+    server_api = get_server_api()
+    citizens = [get_random_citizen(relatives=False) for _ in range(5)]
+    citizens[0]['citizen_id'] = 0
+    citizens[0]['relatives'] = [1]
+    citizens[1]['citizen_id'] = 1
+    citizens[1]['relatives'] = [0]
+    citizens[2]['citizen_id'] = 2
+    citizens[2]['relatives'] = [3, 4]
+    citizens[3]['citizen_id'] = 3
+    citizens[3]['relatives'] = [2, 4]
+    citizens[4]['citizen_id'] = 4
+    citizens[4]['relatives'] = [2, 3]
+
+    data = {
+        'citizens': citizens
+    }
+    r = requests.post(f"{server_api}/imports", json=data)
+    result = r.json()
+    assert r.status_code == 201
+    assert "data" in result
+    assert "import_id" in result['data']
+
+    import_id = result['data']['import_id']
+
+    citizen = citizens[0]
+    citizen['relatives'].append(2)
+
+    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=citizen)
+    assert r.status_code == 200
+
+    r = requests.get(f"{server_api}/imports/{import_id}/citizens")
+    result = r.json()
+    print(result)
+    cs = result['data']
+
+    for c in cs:
+        if c['citizen_id'] == 0:
+            assert c['relatives'] == [1, 2]
+        if c['citizen_id'] == 2:
+            assert c['relatives'] == [3, 4, 0]
+
+    citizen = citizens[2]
+    citizen['relatives'] = [4, 0]
+
+    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=citizen)
+    assert r.status_code == 200
+
+    r = requests.get(f"{server_api}/imports/{import_id}/citizens")
+    result = r.json()
+    cs = result['data']
+
+    for c in cs:
+        if c['citizen_id'] == 3:
+            assert c['relatives'] == [4]
+        if c['citizen_id'] == 2:
+            assert c['relatives'] == [4, 0]
