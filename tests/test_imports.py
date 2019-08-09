@@ -242,7 +242,7 @@ def test_import_id():
     assert imp2_id - imp1_id == 1
 
 
-def __import_task(n: int):
+def __import_task(n: int, timeout=60):
 
     server_api = get_server_api()
     data = {
@@ -258,12 +258,30 @@ def __import_task(n: int):
 
     imp1_id = result['data']['import_id']
 
+    print(f"Import with {imp1_id} finished in {end - start} sec.")
     assert isinstance(imp1_id, int)
-    assert end - start < 60
+    assert end - start < timeout
+
+
+def test_large_import():
+    __import_task(10_000, 10)
 
 
 def test_parallel_import():
-    with mp.Pool(processes=10) as pool:
-        pool.map(__import_task, [10000]*10)
+    n = 10
+    start = time.time()
+    with mp.Pool(processes=n) as pool:
+        pool.map(__import_task, [10_000]*n)
+    end = time.time()
+    ts1 = end - start
+    print(f"Total load time for parallel {n} loads is {ts1} sec.")
 
+    start = time.time()
+    for i in range(n):
+        __import_task(10_000, 10)
+    end = time.time()
+    ts2 = end - start
+    print(f"Total load time for sequential {n} loads is {ts2} sec.")
+
+    assert ts1 < ts2
 
