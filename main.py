@@ -4,6 +4,7 @@ from collections import defaultdict, Counter
 from typing import List
 from logging import getLogger
 import numpy as np
+from enum import Enum
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, validator
 from pymongo import MongoClient
@@ -25,6 +26,11 @@ imports = db['imports']
 counter = db['counter']
 
 
+class Gender(str, Enum):
+    male = 'male'
+    female = 'female'
+
+
 class Citizen(BaseModel):
     citizen_id: int
     town: str
@@ -33,7 +39,7 @@ class Citizen(BaseModel):
     apartment: int
     name: str
     birth_date: str
-    gender: str
+    gender: Gender
     relatives: List[int]
 
     @validator('birth_date')
@@ -49,7 +55,7 @@ class Patch(BaseModel):
     apartment: int = None
     name: str = None
     birth_date: str = None
-    gender: str = None
+    gender: Gender = None
     relatives: List[int] = None
 
     @validator('birth_date')

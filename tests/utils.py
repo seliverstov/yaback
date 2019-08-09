@@ -41,6 +41,8 @@ def get_random_citizen(relatives=False):
 
     c['birth_date'] = get_random_date_str()
 
+    c['gender'] = 'male' if random.random() > 0.5 else 'female'
+
     if relatives:
         c['relatives'] = get_random_list_of_ints()
     else:

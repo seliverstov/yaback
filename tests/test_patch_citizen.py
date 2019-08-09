@@ -73,5 +73,13 @@ def test_patch():
     print(f"RESPONSE: {result}")
     assert r.status_code == 422
 
+    new_citizen = get_random_citizen(relatives=False)
+    new_citizen['gender'] = 'abc'
+
+    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
+    result = r.json()
+    print(f"RESPONSE: {result}")
+    assert r.status_code == 422
+
 
 

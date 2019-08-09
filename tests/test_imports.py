@@ -168,7 +168,42 @@ def test_import_name():
 
 
 def test_import_gender():
-    __test_import_str_field('gender')
+    field = 'gender'
+    server_api = get_server_api()
+    citizen = get_random_citizen(relatives=False)
+    citizen[field] = None
+    data = {
+        'citizens': [citizen]
+    }
+    r = requests.post(f"{server_api}/imports", json=data)
+    # result = r.json()
+
+    assert r.status_code == 422
+
+    citizen[field] = "abc"
+    data = {
+        'citizens': [citizen]
+    }
+    r = requests.post(f"{server_api}/imports", json=data)
+    # result = r.json()
+
+    assert r.status_code == 422
+
+    citizen[field] = "male"
+    r = requests.post(f"{server_api}/imports", json=data)
+    result = r.json()
+
+    assert r.status_code == 201
+    assert "data" in result
+    assert "import_id" in result['data']
+
+    citizen[field] = "female"
+    r = requests.post(f"{server_api}/imports", json=data)
+    result = r.json()
+
+    assert r.status_code == 201
+    assert "data" in result
+    assert "import_id" in result['data']
 
 
 def test_import_birth_date():
