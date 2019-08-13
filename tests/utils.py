@@ -8,8 +8,18 @@ from pymongo import MongoClient
 from .examples import CITIZEN
 
 
-def get_random_int():
-    return random.randint(1, 100)
+def gen_int():
+    n = 0
+    while True:
+        n += 1
+        yield n
+
+
+gi = gen_int()
+
+
+def get_int():
+    return next(gi)
 
 
 def get_random_list_of_ints():
@@ -34,7 +44,7 @@ def get_random_citizen(relatives=False):
     c = deepcopy(CITIZEN)
     for k, v in c.items():
         if isinstance(v, int):
-            c[k] = get_random_int()
+            c[k] = get_int()
         elif isinstance(v, str):
             c[k] = get_random_lower_string()
 

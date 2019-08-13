@@ -265,8 +265,6 @@ def __import_task(n: int, timeout=60):
 
     server_api = get_server_api()
     citizens  = [get_random_citizen(relatives=False) for _ in range(n)]
-    for i, c in enumerate(citizens):
-        c['citizen_id'] = i
     data = {
         'citizens': citizens
     }
