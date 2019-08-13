@@ -27,7 +27,7 @@ def get_server_api():
 
 
 def get_random_date_str():
-    return f"{random.randint(1,25)}.{random.randint(1,12)}.{random.randint(1900, 2019)}"
+    return f"{random.randint(1,25)}.{random.randint(1,12)}.{random.randint(1900, 2018)}"
 
 
 def get_random_citizen(relatives=False):

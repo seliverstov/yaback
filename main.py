@@ -50,7 +50,9 @@ class Citizen(BaseModel):
 
     @validator('birth_date')
     def birth_date_format(cls, v):
-        datetime.datetime.strptime(v, '%d.%m.%Y')
+        d = datetime.datetime.strptime(v, '%d.%m.%Y')
+        if d > datetime.datetime.now():
+            raise ValueError("birth_date should be in past")
         return v
 
 
@@ -67,7 +69,9 @@ class Patch(BaseModel):
     @validator('birth_date')
     def birth_date_format(cls, v):
         if v is not None:
-            datetime.datetime.strptime(v, '%d.%m.%Y')
+            d = datetime.datetime.strptime(v, '%d.%m.%Y')
+            if d > datetime.datetime.now():
+                raise ValueError("birth_date should be in past")
         return v
 
 

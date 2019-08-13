@@ -138,13 +138,19 @@ def __test_import_date_field(field):
 
     assert r.status_code == 400
 
-    citizen[field] = "10.10.2019"
+    citizen[field] = "8.8.2019"
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
 
     assert r.status_code == 201
     assert "data" in result
     assert "import_id" in result['data']
+
+    citizen[field] = "10.10.2019"
+    r = requests.post(f"{server_api}/imports", json=data)
+    # result = r.json()
+
+    assert r.status_code == 400
 
 
 def test_import_citizen_id():
