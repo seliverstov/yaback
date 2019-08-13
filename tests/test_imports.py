@@ -14,6 +14,19 @@ def teardown():
     clear_mongo_db()
 
 
+def test_import_non_unique_ids():
+    server_api = get_server_api()
+    citizens = [get_random_citizen(relatives=False) for _ in range(5)]
+    data = {
+        'citizens': citizens
+    }
+    citizens[0]['citizen_id'] = 1
+    citizens[3]['citizen_id'] = 1
+    r = requests.post(f"{server_api}/imports", json=data)
+    # result = r.json()
+    assert r.status_code == 400
+
+
 def test_import_without_relatives():
     server_api = get_server_api()
     data = {
@@ -251,9 +264,13 @@ def test_import_id():
 def __import_task(n: int, timeout=60):
 
     server_api = get_server_api()
+    citizens  = [get_random_citizen(relatives=False) for _ in range(n)]
+    for i, c in enumerate(citizens):
+        c['citizen_id'] = i
     data = {
-        'citizens': [get_random_citizen(relatives=False) for _ in range(n)]
+        'citizens': citizens
     }
+
     start = time.time()
     r = requests.post(f"{server_api}/imports", json=data)
     end = time.time()

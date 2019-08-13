@@ -79,6 +79,15 @@ class Import(BaseModel):
     citizens: List[Citizen]
 
     @validator("citizens", whole=True)
+    def check_unique_citizen_ids(cls, v):
+        ids = [item.citizen_id for item in v]
+
+        if len(ids) != len(set(ids)):
+            raise ValueError("citizens must have unique id's")
+
+        return v
+
+    @validator("citizens", whole=True)
     def relatives_must_be_mutual(cls, v):
         citizens = {}
 
