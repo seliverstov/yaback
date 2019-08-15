@@ -73,7 +73,7 @@ def test_import_mutual_relatives():
     assert "import_id" in result['data']
 
 
-def __test_import_int_field(field):
+def __test_import_int_field(field, check_negative = False):
     server_api = get_server_api()
     citizen = get_random_citizen(relatives=False)
     citizen[field] = None
@@ -98,6 +98,13 @@ def __test_import_int_field(field):
     assert r.status_code == 201
     assert "data" in result
     assert "import_id" in result['data']
+
+    if check_negative:
+        citizen[field] = "-1"
+        r = requests.post(f"{server_api}/imports", json=data)
+        # result = r.json()
+
+        assert r.status_code == 400
 
 
 def __test_import_str_field(field):
@@ -171,7 +178,7 @@ def test_import_citizen_id():
 
 
 def test_import_apartment():
-    __test_import_int_field('apartment')
+    __test_import_int_field('apartment', check_negative=True)
 
 
 def test_import_town():

@@ -55,6 +55,12 @@ class Citizen(BaseModel):
             raise ValueError("birth_date should be in past")
         return v
 
+    @validator('apartment')
+    def apartment_gt_zero(cls, v):
+        if v <= 0:
+            raise ValueError("Apartment should be greater than zero")
+        return v
+
 
 class Patch(BaseModel):
     town: str = None
@@ -72,6 +78,13 @@ class Patch(BaseModel):
             d = datetime.datetime.strptime(v, '%d.%m.%Y')
             if d > datetime.datetime.now():
                 raise ValueError("birth_date should be in past")
+        return v
+
+    @validator('apartment')
+    def apartment_gt_zero(cls, v):
+        if v is not None:
+            if v <= 0:
+                raise ValueError("Apartment should be greater than zero")
         return v
 
 
