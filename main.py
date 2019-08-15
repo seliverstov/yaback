@@ -8,7 +8,7 @@ from typing import List
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Schema
 from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
 from starlette.responses import RedirectResponse, JSONResponse
@@ -39,11 +39,11 @@ class Gender(str, Enum):
 
 class Citizen(BaseModel):
     citizen_id: int
-    town: str
-    street: str
-    building: str
+    town: str = Schema(..., min_length=1)
+    street: str = Schema(..., min_length=1)
+    building: str = Schema(..., min_length=1)
     apartment: int
-    name: str
+    name: str = Schema(..., min_length=1)
     birth_date: str
     gender: Gender
     relatives: List[int]
@@ -63,11 +63,11 @@ class Citizen(BaseModel):
 
 
 class Patch(BaseModel):
-    town: str = None
-    street: str = None
-    building: str = None
+    town: str = Schema(None, min_length=1)
+    street: str = Schema(None, min_length=1)
+    building: str = Schema(None, min_length=1)
     apartment: int = None
-    name: str = None
+    name: str = Schema(None, min_length=1)
     birth_date: str = None
     gender: Gender = None
     relatives: List[int] = None

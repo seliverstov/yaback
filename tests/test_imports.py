@@ -119,6 +119,15 @@ def __test_import_str_field(field):
 
     assert r.status_code == 400
 
+    citizen[field] = ""
+    data = {
+        'citizens': [citizen]
+    }
+    r = requests.post(f"{server_api}/imports", json=data)
+    # result = r.json()
+
+    assert r.status_code == 400
+
     citizen[field] = "a"
     r = requests.post(f"{server_api}/imports", json=data)
     result = r.json()
