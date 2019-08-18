@@ -11,7 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, validator, Schema
 from pymongo.collection import ReturnDocument
-from starlette.responses import RedirectResponse, JSONResponse
+from starlette.responses import JSONResponse
 
 log = getLogger(__name__)
 
@@ -115,18 +115,12 @@ class Import(BaseModel):
         return v
 
 
-app = FastAPI()
+app = FastAPI(docs_url="/")
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     return JSONResponse({"detail": str(exc)}, status_code=400)
-
-
-@app.get("/")
-async def get_root():
-    response = RedirectResponse(url='/docs')
-    return response
 
 
 @app.post("/imports", status_code=201)
