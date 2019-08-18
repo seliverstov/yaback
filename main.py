@@ -8,8 +8,8 @@ from typing import List
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
+from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, validator, Schema
-from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
 from starlette.responses import RedirectResponse, JSONResponse
 
@@ -19,7 +19,7 @@ MONGO_URL = os.getenv('YB_MONGO_URL', 'mongodb://localhost:27017/')
 
 log.info(f"MONGO_URL={MONGO_URL}")
 
-client = MongoClient(MONGO_URL)
+client = AsyncIOMotorClient(MONGO_URL)
 
 db = client['yaback']
 
@@ -124,27 +124,27 @@ async def validation_exception_handler(request, exc):
 
 
 @app.get("/")
-def get_root():
+async def get_root():
     response = RedirectResponse(url='/docs')
     return response
 
 
 @app.post("/imports", status_code=201)
-def post_imports(data: Import):
+async def post_imports(data: Import):
     imp = data.dict()
-    c = counter.find_one_and_update(filter={"_id": "import_id"},
-                                    update={"$inc": {"c": 1}},
-                                    upsert=True,
-                                    return_document=ReturnDocument.AFTER)
+    c = await counter.find_one_and_update(filter={"_id": "import_id"},
+                                          update={"$inc": {"c": 1}},
+                                          upsert=True,
+                                          return_document=ReturnDocument.AFTER)
     import_id = c['c']
     imp['import_id'] = import_id
-    imports.insert_one(imp)
+    await imports.insert_one(imp)
     log.info(f"Created import with id: {import_id}")
     return {"data": {"import_id": import_id}}
 
 
 @app.patch("/imports/{import_id}/citizens/{citizen_id}")
-def patch_citizen(import_id: int, citizen_id: int, data: Patch):
+async def patch_citizen(import_id: int, citizen_id: int, data: Patch):
     fields = {k: v for k, v in data.dict().items() if v is not None}
 
     if fields == {}:
@@ -153,7 +153,7 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
     if "relatives" in fields:
         relatives = fields["relatives"]
         if len(relatives) > 0:
-            cnt = imports.aggregate(
+            cursor = imports.aggregate(
                 [
                     {"$match": {"import_id": import_id}},
                     {"$unwind": "$citizens"},
@@ -161,11 +161,11 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
                     {"$group": {"_id": None, "count": {"$sum": 1}}}
                 ]
             )
-            cnt = list(cnt)
+            cnt = await cursor.to_list(None)
             if len(cnt) != 1 or cnt[0]['count'] != len(relatives):
                 raise HTTPException(status_code=400, detail=f"Some relatives does not exists in import {import_id}")
 
-    citizen = imports.find_one_and_update(
+    citizen = await imports.find_one_and_update(
         filter={"import_id": import_id, "citizens.citizen_id": citizen_id},
         projection={"citizens.$": True},
         update={"$set": {f"citizens.$.{k}": v for k, v in fields.items()}},
@@ -183,13 +183,13 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
             log.info(f"Relatives to remove for citizen {citizen_id}: {del_rels}")
 
             if len(add_rels) > 0:
-                imports.update(
+                await imports.update_one(
                     {"import_id": import_id, "citizens.citizen_id": {"$in": list(add_rels)}},
                     {"$push": {f"citizens.$.relatives": citizen_id}}
                 )
 
             if len(del_rels) > 0:
-                imports.update(
+                await imports.update_one(
                     {"import_id": import_id, "citizens.citizen_id": {"$in": list(del_rels)}},
                     {"$pull": {f"citizens.$.relatives": citizen_id}}
                 )
@@ -201,8 +201,8 @@ def patch_citizen(import_id: int, citizen_id: int, data: Patch):
 
 
 @app.get("/imports/{import_id}/citizens")
-def get_citizens(import_id: int):
-    imp = imports.find_one({"import_id": import_id})
+async def get_citizens(import_id: int):
+    imp = await imports.find_one({"import_id": import_id})
     if imp is not None:
         return {"data": imp['citizens']}
     else:
@@ -210,8 +210,8 @@ def get_citizens(import_id: int):
 
 
 @app.get('/imports/{import_id}/citizens/birthdays')
-def get_birthdays(import_id: int):
-    imp = imports.find_one({"import_id": import_id}, projection={
+async def get_birthdays(import_id: int):
+    imp = await imports.find_one({"import_id": import_id}, projection={
         "import_id": True,
         "citizens.birth_date": True,
         "citizens.relatives": True
@@ -239,8 +239,8 @@ def get_birthdays(import_id: int):
 
 
 @app.get('/imports/{import_id}/towns/stat/percentile/age')
-def get_age_stat(import_id: int):
-    imp = imports.find_one({"import_id": import_id}, projection={
+async def get_age_stat(import_id: int):
+    imp = await imports.find_one({"import_id": import_id}, projection={
         "import_id": True,
         "citizens.birth_date": True,
         "citizens.town": True
@@ -273,10 +273,10 @@ def get_age_stat(import_id: int):
 
 
 @app.post('/clear')
-def clear(data: Token):
+async def clear(data: Token):
     if data.dict()['token'] == os.getenv('YB_TOKEN', '52ce8098-d510-4bbc-88b9-e1a733292786'):
-        imports.drop()
-        counter.drop()
+        await imports.drop()
+        await counter.drop()
         return {"data": "ok"}
     else:
         raise HTTPException(status_code=400)
