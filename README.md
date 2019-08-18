@@ -11,7 +11,7 @@ python3 -m venv env
 source ./env/bin/activate
 pip3 install -r requirements.txt
 export YB_MONGO_URL=<CONNECTION_URL_TO_YOUR_MONGODB>
-uvicorn --host 0.0.0.0 --port 8080 --workers 10 main:app
+uvicorn --host 0.0.0.0 --port 8080 main:app
 ```
 
 ### Run with Docker
@@ -41,4 +41,8 @@ The application will create `yaback` database with two collections: `imports` an
 * Install and run the application. 
 * Specify `YB_APP_URL` env. variable if the application runs on another host. 
 * Run `pytest -v` from the application root folder
+
+### Notes about application deployed on Yandex VM
+* Application sources located at `/home/entrant/yaback` (cloned `git` repository)
+* Script for build and run application in Docker container from sources `/home/entrant/run_docker_yaback.sh`
 
