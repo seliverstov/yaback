@@ -176,3 +176,20 @@ def test_patch_with_relatives_update():
         if c['citizen_id'] == 2:
             assert c['relatives'] == [4, 0]
 
+    citizen_id = 4
+    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen_id}", json={"relatives": []})
+    assert r.status_code == 200
+
+    r = requests.get(f"{server_api}/imports/{import_id}/citizens")
+    result = r.json()
+    cs = result['data']
+
+    for c in cs:
+        if c['citizen_id'] == 3:
+            assert c['relatives'] == []
+        if c['citizen_id'] == 2:
+            assert c['relatives'] == [0]
+        if c['citizen_id'] == 4:
+            assert c['relatives'] == []
+
+

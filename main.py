@@ -184,15 +184,17 @@ async def patch_citizen(import_id: int, citizen_id: int, data: Patch):
             log.info(f"Relatives to remove for citizen {citizen_id}: {del_rels}")
 
             if len(add_rels) > 0:
-                await imports.update_one(
-                    {"import_id": import_id, "citizens.citizen_id": {"$in": list(add_rels)}},
-                    {"$push": {f"citizens.$.relatives": citizen_id}}
+                await imports.update_many(
+                    {"import_id": import_id},
+                    {"$push": {"citizens.$[elem].relatives": citizen_id}},
+                    array_filters=[{"elem.citizen_id": {"$in": list(add_rels)}}]
                 )
 
             if len(del_rels) > 0:
-                await imports.update_one(
-                    {"import_id": import_id, "citizens.citizen_id": {"$in": list(del_rels)}},
-                    {"$pull": {f"citizens.$.relatives": citizen_id}}
+                await imports.update_many(
+                    {"import_id": import_id},
+                    {"$pull": {"citizens.$[elem].relatives": citizen_id}},
+                    array_filters=[{"elem.citizen_id": {"$in": list(del_rels)}}]
                 )
 
         citizen.update(fields)
