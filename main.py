@@ -63,7 +63,7 @@ class Citizen(BaseModel):
     @validator('birth_date')
     def birth_date_format(cls, v):
         d = datetime.datetime.strptime(v, '%d.%m.%Y')
-        if d > datetime.datetime.now():
+        if d > datetime.datetime.utcnow():
             raise ValueError("birth_date should be in past")
         return v
 
@@ -87,7 +87,7 @@ class Patch(BaseModel):
     def birth_date_format(cls, v):
         if v is not None:
             d = datetime.datetime.strptime(v, '%d.%m.%Y')
-            if d > datetime.datetime.now():
+            if d > datetime.datetime.utcnow():
                 raise ValueError("birth_date should be in past")
         return v
 
@@ -251,11 +251,11 @@ async def get_age_stat(import_id: int):
 
     towns = defaultdict(list)
 
-    year_now = datetime.datetime.now().year
+    now = datetime.datetime.utcnow()
 
     for c in imp['citizens']:
         d, m, year = c['birth_date'].split('.')
-        age = int(year_now) - int(year)
+        age = now.year - int(year) - ((now.month, now.day) < (int(m), int(d)))
         towns[c['town']].append(age)
 
     result = []
