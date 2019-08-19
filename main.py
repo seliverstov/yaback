@@ -265,9 +265,9 @@ async def get_age_stat(import_id: int):
     for town, ages in towns.items():
         result.append({
             "town": town,
-            "p50": int(np.percentile(ages, 50, interpolation='linear')),
-            "p75": int(np.percentile(ages, 75, interpolation='linear')),
-            "p99": int(np.percentile(ages, 99, interpolation='linear'))
+            "p50": round(np.percentile(ages, 50, interpolation='linear'), 2),
+            "p75": round(np.percentile(ages, 75, interpolation='linear'), 2),
+            "p99": round(np.percentile(ages, 99, interpolation='linear'), 2)
         })
 
     return {"data": result}

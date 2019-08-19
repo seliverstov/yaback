@@ -62,14 +62,14 @@ def test_age_percentile():
     assert len(p) == 2
 
     assert p[0]["town"] == "Moscow"
-    assert p[0]["p50"] == 29
-    assert p[0]["p75"] == 39
-    assert p[0]["p99"] == 39
+    assert p[0]["p50"] == 29.0
+    assert p[0]["p75"] == 39.0
+    assert p[0]["p99"] == 39.0
 
     assert p[1]["town"] == "Saratov"
-    assert p[1]["p50"] == 17
-    assert p[1]["p75"] == 18
-    assert p[1]["p99"] == 18
+    assert p[1]["p50"] == 17.0
+    assert p[1]["p75"] == 18.0
+    assert p[1]["p99"] == 18.96
 
     r = requests.get(f"{server_api}/imports/10000/towns/stat/percentile/age")
     result = r.json()
