@@ -324,7 +324,8 @@ def __import_task(n: int, timeout=60):
 
     print(f"Import with {imp1_id} finished in {end - start} sec.")
     assert isinstance(imp1_id, int)
-    assert end - start < timeout
+    elapsed = end - start
+    assert elapsed < timeout
 
 
 def test_large_import():
