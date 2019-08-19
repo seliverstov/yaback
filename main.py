@@ -40,8 +40,8 @@ class Gender(str, Enum):
 NonNegIntReq = Schema(..., ge=0)
 NonNegIntOpt = Schema(None, ge=0)
 
-NonEmpyStrReq = Schema(..., regex=r"\w|\d")
-NonEmptyStrOpt = Schema(None, regex=r"\w|\d")
+NonEmpyStrReq = Schema(..., regex=r"\w")
+NonEmptyStrOpt = Schema(None, regex=r"\w")
 
 
 class Citizen(BaseModel):
