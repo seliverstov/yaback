@@ -31,9 +31,13 @@ def test_patch():
     new_citizen = get_random_citizen(relatives=False)
 
     r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
+    assert r.status_code == 400
+
+    del new_citizen['citizen_id']
+
+    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
     result = r.json()
     print(f"RESPONSE: {result}")
-    assert r.status_code == 200
 
     for k, v in result['data'].items():
         if k == "citizen_id":
@@ -83,6 +87,7 @@ def test_patch():
 
     for field in ['name', 'town', 'street', 'building']:
         new_citizen = get_random_citizen(relatives=False)
+        del new_citizen['citizen_id']
         new_citizen[field] = '1'
 
         r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
@@ -91,6 +96,7 @@ def test_patch():
         assert r.status_code == 200
 
         new_citizen = get_random_citizen(relatives=False)
+        del new_citizen['citizen_id']
         new_citizen[field] = ''
 
         r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
@@ -99,6 +105,7 @@ def test_patch():
         assert r.status_code == 400
 
         new_citizen = get_random_citizen(relatives=False)
+        del new_citizen['citizen_id']
         new_citizen[field] = None
 
         r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
@@ -133,9 +140,11 @@ def test_patch_with_relatives_update():
     import_id = result['data']['import_id']
 
     citizen = citizens[0]
+    citizen_id = citizen['citizen_id']
+    del citizen['citizen_id']
     citizen['relatives'].append(2)
 
-    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=citizen)
+    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen_id}", json=citizen)
     assert r.status_code == 200
 
     r = requests.get(f"{server_api}/imports/{import_id}/citizens")
@@ -150,9 +159,11 @@ def test_patch_with_relatives_update():
             assert c['relatives'] == [3, 4, 0]
 
     citizen = citizens[2]
+    citizen_id = citizen['citizen_id']
+    del citizen['citizen_id']
     citizen['relatives'] = [4, 0]
 
-    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=citizen)
+    r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen_id}", json=citizen)
     assert r.status_code == 200
 
     r = requests.get(f"{server_api}/imports/{import_id}/citizens")

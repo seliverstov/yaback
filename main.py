@@ -9,7 +9,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, validator, Schema
+from pydantic import BaseModel, validator, Extra, conint
 from pymongo.collection import ReturnDocument
 from starlette.responses import JSONResponse
 
@@ -38,15 +38,20 @@ class Gender(str, Enum):
 
 
 class Citizen(BaseModel):
-    citizen_id: int
-    town: str = Schema(..., min_length=1)
-    street: str = Schema(..., min_length=1)
-    building: str = Schema(..., min_length=1)
-    apartment: int
-    name: str = Schema(..., min_length=1)
+    citizen_id: conint(ge=0)
+    town: str
+    street: str
+    building: str
+    apartment: conint(ge=0)
+    name: str
     birth_date: str
     gender: Gender
     relatives: List[int]
+
+    class Config:
+        extra = Extra.forbid
+        min_anystr_length = 1
+        max_anystr_length = 256
 
     @validator('birth_date')
     def birth_date_format(cls, v):
@@ -63,14 +68,19 @@ class Citizen(BaseModel):
 
 
 class Patch(BaseModel):
-    town: str = Schema(None, min_length=1)
-    street: str = Schema(None, min_length=1)
-    building: str = Schema(None, min_length=1)
-    apartment: int = None
-    name: str = Schema(None, min_length=1)
+    town: str = None
+    street: str = None
+    building: str = None
+    apartment: conint(ge=0)
+    name: str = None
     birth_date: str = None
     gender: Gender = None
     relatives: List[int] = None
+
+    class Config:
+        extra = Extra.forbid
+        min_anystr_length = 1
+        max_anystr_length = 256
 
     @validator('birth_date')
     def birth_date_format(cls, v):
@@ -80,16 +90,12 @@ class Patch(BaseModel):
                 raise ValueError("birth_date should be in past")
         return v
 
-    @validator('apartment')
-    def apartment_gt_zero(cls, v):
-        if v is not None:
-            if v <= 0:
-                raise ValueError("Apartment should be greater than zero")
-        return v
-
 
 class Import(BaseModel):
     citizens: List[Citizen]
+
+    class Config:
+        extra = Extra.forbid
 
     @validator("citizens", whole=True)
     def check_unique_citizen_ids(cls, v):
