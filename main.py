@@ -9,7 +9,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, validator, Extra, conint
+from pydantic import BaseModel, validator, Extra, Schema
 from pymongo.collection import ReturnDocument
 from starlette.responses import JSONResponse
 
@@ -37,14 +37,21 @@ class Gender(str, Enum):
     female = 'female'
 
 
+NonNegIntReq = Schema(..., ge=0)
+NonNegIntOpt = Schema(None, ge=0)
+
+NonEmpyStrReq = Schema(..., regex=r"\w|\d")
+NonEmptyStrOpt = Schema(None, regex=r"\w|\d")
+
+
 class Citizen(BaseModel):
-    citizen_id: conint(ge=0)
-    town: str
-    street: str
-    building: str
-    apartment: conint(ge=0)
-    name: str
-    birth_date: str
+    citizen_id: int = NonNegIntReq
+    town: str = NonEmpyStrReq
+    street: str = NonEmpyStrReq
+    building: str = NonEmpyStrReq
+    apartment: int = NonNegIntReq
+    name: str = NonEmpyStrReq
+    birth_date: str = NonEmpyStrReq
     gender: Gender
     relatives: List[int]
 
@@ -60,22 +67,16 @@ class Citizen(BaseModel):
             raise ValueError("birth_date should be in past")
         return v
 
-    @validator('apartment')
-    def apartment_gt_zero(cls, v):
-        if v <= 0:
-            raise ValueError("Apartment should be greater than zero")
-        return v
-
 
 class Patch(BaseModel):
-    town: str = None
-    street: str = None
-    building: str = None
-    apartment: conint(ge=0)
-    name: str = None
-    birth_date: str = None
-    gender: Gender = None
-    relatives: List[int] = None
+    town: str = NonEmptyStrOpt
+    street: str = NonEmptyStrOpt
+    building: str = NonEmptyStrOpt
+    apartment: int = NonNegIntOpt
+    name: str = NonEmptyStrOpt
+    birth_date: str = NonEmptyStrOpt
+    gender: Gender = NonEmptyStrOpt
+    relatives: List[int] = NonEmptyStrOpt
 
     class Config:
         extra = Extra.forbid
