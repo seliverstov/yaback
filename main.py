@@ -50,7 +50,7 @@ class Citizen(BaseModel):
     street: str = NonEmpyStrReq
     building: str = NonEmpyStrReq
     apartment: int = NonNegIntReq
-    name: str = NonEmpyStrReq
+    name: str
     birth_date: str = NonEmpyStrReq
     gender: Gender
     relatives: List[int]
@@ -73,7 +73,7 @@ class Patch(BaseModel):
     street: str = NonEmptyStrOpt
     building: str = NonEmptyStrOpt
     apartment: int = NonNegIntOpt
-    name: str = NonEmptyStrOpt
+    name: str = None
     birth_date: str = NonEmptyStrOpt
     gender: Gender = NonEmptyStrOpt
     relatives: List[int] = NonEmptyStrOpt
