@@ -23,6 +23,10 @@ docker build -t yaback:latest .
 docker run --name yaback -p 8080:8080 -e YB_MONGO_URL=<CONNECTION_URL_TO_YOUR_MONGODB> -d yaback:latest
 ```
 
+### Notes about application deployed on Yandex VM
+* Application sources located at `/home/entrant/yaback` (cloned `git` repository)
+* Script for build and run application in Docker container from sources `/home/entrant/run_docker_yaback.sh`
+
 ### Env. variables
 
 * `YB_MONGO_URL` - connection url to MongoDB (by default `mongodb://localhost:27017/`)
@@ -42,7 +46,10 @@ The application will create `yaback` database with two collections: `imports` an
 * Specify `YB_APP_URL` env. variable if the application runs on another host. 
 * Run `pytest -v` from the application root folder
 
-### Notes about application deployed on Yandex VM
-* Application sources located at `/home/entrant/yaback` (cloned `git` repository)
-* Script for build and run application in Docker container from sources `/home/entrant/run_docker_yaback.sh`
-
+#### Run Tests on Yandex VM
+```sh
+cd /home/entrant/
+source venv/bin/activate
+cd yaback
+pytest -v
+```
