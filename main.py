@@ -38,10 +38,12 @@ class Gender(str, Enum):
 
 
 NonNegIntReq = Schema(..., ge=0)
-NonNegIntOpt = Schema(None, ge=0)
+NonNegIntOpt = Schema(-1, ge=0)
 
 NonEmpyStrReq = Schema(..., regex=r"\w")
-NonEmptyStrOpt = Schema(None, regex=r"\w")
+NonEmptyStrOpt = Schema("", regex=r"\w")
+
+NameOpt = Schema("")
 
 
 class Citizen(BaseModel):
@@ -73,7 +75,7 @@ class Patch(BaseModel):
     street: str = NonEmptyStrOpt
     building: str = NonEmptyStrOpt
     apartment: int = NonNegIntOpt
-    name: str = None
+    name: str = NameOpt
     birth_date: str = NonEmptyStrOpt
     gender: Gender = NonEmptyStrOpt
     relatives: List[int] = NonEmptyStrOpt
@@ -146,7 +148,9 @@ async def post_imports(data: Import):
 
 @app.patch("/imports/{import_id}/citizens/{citizen_id}")
 async def patch_citizen(import_id: int, citizen_id: int, data: Patch):
-    fields = {k: v for k, v in data.dict().items() if v is not None}
+    fields = {k: v for k, v in data.dict().items() if (isinstance(v, int) and v != -1) or
+              (isinstance(v, str) and v != "") or
+              ((isinstance(v, list)) and v is not None)}
 
     if fields == {}:
         raise HTTPException(status_code=400, detail="Empty patch not allowed")

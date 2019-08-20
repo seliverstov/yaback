@@ -111,7 +111,7 @@ def test_patch():
         r = requests.patch(f"{server_api}/imports/{import_id}/citizens/{citizen['citizen_id']}", json=new_citizen)
         result = r.json()
         print(f"RESPONSE: {result}")
-        assert r.status_code == 200
+        assert r.status_code == 400
 
 
 def test_patch_with_relatives_update():
